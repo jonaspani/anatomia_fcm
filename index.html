@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anatomia Humana Normal - FCM-UNL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-brand">
+    <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M7 14c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="3" fill="currentColor"/>
+      <line x1="14" y1="17" x2="14" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <span class="brand-title">Anatomia</span>
+      <span class="brand-sub">FCM · UNL</span>
+    </div>
+  </div>
+
+  <nav class="topnav" id="topnav">
+    <a href="#" class="topnav-link active" id="nav-dashboard"   onclick="setView('dashboard');   return false;">Dashboard</a>
+    <a href="#" class="topnav-link"        id="nav-calendario"  onclick="setView('calendario');  return false;">Calendario</a>
+    <a href="#" class="topnav-link"        id="nav-actividades" onclick="setView('actividades'); return false;">Actividades</a>
+    <a href="#" class="topnav-link"        id="nav-docentes"    onclick="setView('docentes');    return false;">Docentes</a>
+    <div class="nav-dropdown" id="navDropdown">
+      <a href="#" class="topnav-link dropdown-toggle" onclick="toggleDropdown(); return false;">
+        Carreras <span class="dropdown-arrow">▾</span>
+      </a>
+      <div class="dropdown-panel" id="dropdownPanel">
+        <a href="#" class="dropdown-link" onclick="setView('medicina');    closeDropdown(); return false;"><span class="career-dot med"></span> Medicina</a>
+        <a href="#" class="dropdown-link" onclick="setView('obstetricia'); closeDropdown(); return false;"><span class="career-dot obs"></span> Lic. en Obstetricia</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <input type="text" placeholder="Buscar..." id="searchInput" oninput="handleSearch()" />
+    </div>
+    <button class="mode-btn" id="modeBtn" onclick="toggleMode()">
+      <span id="modeIcon">&#128065;</span>
+      <span id="modeLabel">Vista</span>
+    </button>
+    <button class="btn-primary" id="addBtn" onclick="openModal()" style="display:none">+ Nueva</button>
+    <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#" class="mobile-link active" id="mnav-dashboard"   onclick="setView('dashboard');   closeMobileMenu(); return false;">Dashboard</a>
+  <a href="#" class="mobile-link"        id="mnav-calendario"  onclick="setView('calendario');  closeMobileMenu(); return false;">Calendario</a>
+  <a href="#" class="mobile-link"        id="mnav-actividades" onclick="setView('actividades'); closeMobileMenu(); return false;">Actividades</a>
+  <a href="#" class="mobile-link"        id="mnav-docentes"    onclick="setView('docentes');    closeMobileMenu(); return false;">Docentes</a>
+  <div class="mobile-divider"></div>
+  <a href="#" class="mobile-link" onclick="setView('medicina');    closeMobileMenu(); return false;"><span class="career-dot med"></span>&nbsp;Medicina</a>
+  <a href="#" class="mobile-link" onclick="setView('obstetricia'); closeMobileMenu(); return false;"><span class="career-dot obs"></span>&nbsp;Lic. en Obstetricia</a>
+  <div class="mobile-divider"></div>
+  <button class="mobile-link mobile-mode-btn" id="mobileModeBtn" onclick="toggleMode(); closeMobileMenu();">&#128065; Modo Vista</button>
+  <button class="mobile-link mobile-add-btn"  id="mobileAddBtn"  onclick="openModal(); closeMobileMenu();" style="display:none">+ Nueva Actividad</button>
+</div>
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+<main class="main">
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view active">
+    <div class="panel-full">
+      <div class="panel-header">
+        <h2 class="panel-title">Proximas actividades</h2>
+        <div class="panel-header-right">
+          <div class="filter-chips" id="dashFilterChips">
+            <button class="chip active" onclick="filterDash('all',this)">Todas</button>
+            <button class="chip" onclick="filterDash('Medicina',this)">Medicina</button>
+            <button class="chip" onclick="filterDash('Obstetricia',this)">Obstetricia</button>
+          </div>
+          <button class="chip archived-btn" onclick="setView('archivados'); return false;">&#128194; Archivados</button>
+        </div>
+      </div>
+      <div id="dashList" class="activity-list"></div>
+    </div>
+    <div style="display:none">
+      <span id="statTotal"></span><span id="statFin"></span>
+      <span id="statPend"></span><span id="statEnc"></span>
+      <svg id="donutSvg"></svg><div id="donutLegend"></div><div id="careerBars"></div>
+    </div>
+  </div>
+
+  <!-- ACTIVIDADES -->
+  <div id="view-actividades" class="view">
+    <div class="filters-bar">
+      <select id="filterCarrera" onchange="renderActividades()">
+        <option value="">Todas las carreras</option>
+        <option value="Medicina">Medicina</option>
+        <option value="Obstetricia">Obstetricia</option>
+      </select>
+      <select id="filterArea" onchange="renderActividades()"><option value="">Todas las areas</option></select>
+      <select id="filterTipo" onchange="renderActividades()">
+        <option value="">Todos los tipos</option>
+        <option value="Seminario">Seminario</option>
+        <option value="Taller">Taller</option>
+        <option value="Optativo I">Optativo I</option>
+        <option value="Optativo II">Optativo II</option>
+        <option value="Final">Final</option>
+      </select>
+      <select id="filterEstado" onchange="renderActividades()">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="En curso">En curso</option>
+        <option value="Finalizado">Finalizado</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>Actividad</th><th>Tipo</th><th>Carrera / Area</th>
+          <th>Fecha</th><th>Docente(s)</th><th>Estado</th>
+          <th id="actionsHeader" style="display:none">Acciones</th>
+        </tr></thead>
+        <tbody id="actividadesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ARCHIVADOS -->
+  <div id="view-archivados" class="view">
+    <div class="panel-full">
+      <div class="panel-header">
+        <h2 class="panel-title">&#128194; Actividades Archivadas</h2>
+        <button class="chip" onclick="setView('dashboard'); return false;">← Volver</button>
+      </div>
+      <div id="archivedList" class="activity-list"></div>
+    </div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div id="view-calendario" class="view">
+    <div class="cal-controls">
+      <button class="btn-ghost" onclick="calPrev()">← Anterior</button>
+      <h2 id="calTitle" class="cal-title"></h2>
+      <button class="btn-ghost" onclick="calNext()">Siguiente →</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <span><span class="dot-leg med"></span>Medicina</span>
+      <span><span class="dot-leg obs"></span>Obstetricia</span>
+    </div>
+  </div>
+
+  <!-- DOCENTES -->
+  <div id="view-docentes" class="view">
+    <div class="career-header" style="background:linear-gradient(135deg,#2a2744 60%,#5b4a8a)">
+      <h2>Docentes</h2>
+      <p>Actividades asignadas y proximos seminarios</p>
+    </div>
+    <div id="docentesContent" class="docentes-grid"></div>
+  </div>
+
+  <!-- MEDICINA -->
+  <div id="view-medicina" class="view">
+    <div class="career-header med-header"><h2>Medicina</h2><p>Actividades por año y area tematica</p></div>
+    <div id="medicinaContent"></div>
+  </div>
+
+  <!-- OBSTETRICIA -->
+  <div id="view-obstetricia" class="view">
+    <div class="career-header obs-header"><h2>Licenciatura en Obstetricia</h2><p>Actividades por area tematica</p></div>
+    <div id="obstetriciaContent"></div>
+  </div>
+
+</div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Nueva Actividad</h3>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="fNombre" placeholder="Ej: Osteologia del miembro superior" />
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="fTipo">
+            <option value="Seminario">Seminario</option>
+            <option value="Taller">Taller</option>
+            <option value="Optativo I">Optativo I</option>
+            <option value="Optativo II">Optativo II</option>
+            <option value="Final">Final</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Carrera *</label>
+          <select id="fCarrera" onchange="updateAreaSelect()">
+            <option value="Medicina">Medicina</option>
+            <option value="Obstetricia">Obstetricia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Area *</label>
+          <select id="fArea"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha inicio *</label>
+          <input type="date" id="fFecha" />
+        </div>
+        <div class="form-group">
+          <label>Fecha fin (si es multidia)</label>
+          <input type="date" id="fFechaFin" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora</label>
+          <input type="time" id="fHora" />
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="fEstado">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En curso">En curso</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Docente(s)</label>
+        <select id="fDocentes" multiple size="6" style="height:auto">
+          <option value="Brenda">Brenda</option>
+          <option value="Damian Soria">Damian Soria</option>
+          <option value="Derian Enria">Derian Enria</option>
+          <option value="Francisco Hadad">Francisco Hadad</option>
+          <option value="Hugo Peralta">Hugo Peralta</option>
+          <option value="Joaquin Rudolf">Joaquin Rudolf</option>
+          <option value="Jonas Paniagua">Jonas Paniagua</option>
+          <option value="Mariano Pauloni">Mariano Pauloni</option>
+          <option value="Maximiliano Echevarria">Maximiliano Echevarria</option>
+          <option value="Ricardo Escowich">Ricardo Escowich</option>
+          <option value="Todos">Todos</option>
+        </select>
+        <span style="font-size:11px;color:var(--gray3);margin-top:4px">Ctrl+clic para seleccionar varios</span>
+      </div>
+      <div class="form-group full">
+        <label>Notas / Observaciones</label>
+        <textarea id="fNotas" rows="3" placeholder="Material necesario, requisitos..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveActivity()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
