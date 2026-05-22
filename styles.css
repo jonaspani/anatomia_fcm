@@ -609,3 +609,31 @@ html, body {
   .brand-sub { display: none; }
   .search-box { display: none; }
 }
+
+/* ══════════════════════════════════════════
+   CALENDARIO — colores por tipo
+══════════════════════════════════════════ */
+.cal-event { font-size: 10px; padding: 2px 5px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.ev-sem  { background: var(--blue-l);  color: var(--blue); }
+.ev-tal  { background: var(--amber-l); color: var(--amber); }
+.ev-opt1 { background: #e8d4f8; color: #7040a0; }
+.ev-opt2 { background: #d4e8f8; color: #205080; }
+.ev-fin  { background: #fce8e8; color: var(--red); }
+
+/* ══════════════════════════════════════════
+   DASHBOARD — secciones semana / proximas
+══════════════════════════════════════════ */
+.dash-section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  color: var(--navy);
+  padding: 10px 0 10px;
+  border-bottom: 2px solid var(--gray2);
+  margin-bottom: 14px;
+}
+.dash-empty-week {
+  color: var(--gray3);
+  font-size: 13px;
+  padding: 12px 4px 20px;
+  font-style: italic;
+}
