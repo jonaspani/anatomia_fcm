@@ -343,20 +343,77 @@ function filterDash(val, el) {
   renderDashboard();
 }
 
+function getWeekMonday(date) {
+  var d = new Date(date);
+  var day = d.getDay(); // 0=dom
+  var diff = (day === 0) ? -6 : 1 - day; // retroceder al lunes
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function toDateStr(date) {
+  var y = date.getFullYear();
+  var m = String(date.getMonth()+1).padStart(2,"0");
+  var d = String(date.getDate()).padStart(2,"0");
+  return y + "-" + m + "-" + d;
+}
+
+function formatShortDate(date) {
+  var d = String(date.getDate()).padStart(2,"0");
+  var m = String(date.getMonth()+1).padStart(2,"0");
+  var y = String(date.getFullYear()).slice(2);
+  return d + "/" + m + "/" + y;
+}
+
 function renderDashboard() {
-  var list = activeActivities();
-  if (dashFilter !== "all") list = list.filter(function(a){ return a.carrera === dashFilter; });
-  if (searchQuery) list = list.filter(function(a){
+  var all = activeActivities();
+  if (dashFilter !== "all") all = all.filter(function(a){ return a.carrera === dashFilter; });
+  if (searchQuery) all = all.filter(function(a){
     return a.nombre.toLowerCase().indexOf(searchQuery) > -1 ||
            docentesStr(a).toLowerCase().indexOf(searchQuery) > -1 ||
            a.area.toLowerCase().indexOf(searchQuery) > -1;
   });
-  list.sort(function(a,b){ return a.fecha.localeCompare(b.fecha); });
+  all.sort(function(a,b){ return a.fecha.localeCompare(b.fecha); });
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var monday = getWeekMonday(today);
+  var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  var mondayStr = toDateStr(monday);
+  var sundayStr = toDateStr(sunday);
+
+  // Actividades de esta semana
+  var weekActs = all.filter(function(a){
+    var start = a.fecha;
+    var end   = (a.fechaFin && a.fechaFin > a.fecha) ? a.fechaFin : a.fecha;
+    return start <= sundayStr && end >= mondayStr;
+  });
+
+  // Proximas (despues de esta semana)
+  var upcoming = all.filter(function(a){
+    var start = a.fecha;
+    return start > sundayStr;
+  });
 
   var el = document.getElementById("dashList");
-  if (!list.length) { el.innerHTML = emptyState("No hay actividades proximas"); return; }
   var html = "";
-  for (var i = 0; i < list.length; i++) html += activityItem(list[i]);
+
+  // -- SEMANA ACTUAL --
+  html += "<div class='dash-section-title'>Semana del " + formatShortDate(monday) + " al " + formatShortDate(sunday) + "</div>";
+  if (weekActs.length === 0) {
+    html += "<div class='dash-empty-week'>Sin actividades esta semana</div>";
+  } else {
+    for (var i = 0; i < weekActs.length; i++) html += activityItem(weekActs[i]);
+  }
+
+  // -- PROXIMAS --
+  html += "<div class='dash-section-title' style='margin-top:28px'>Proximas actividades</div>";
+  if (upcoming.length === 0) {
+    html += "<div class='dash-empty-week'>No hay actividades programadas proximas</div>";
+  } else {
+    for (var i = 0; i < upcoming.length; i++) html += activityItem(upcoming[i]);
+  }
+
   el.innerHTML = html;
 }
 
@@ -499,7 +556,7 @@ function renderCalendar() {
     html += "<div class='cal-num'>" + d + "</div>";
     for (var j = 0; j < Math.min(dayActs.length, 3); j++) {
       var a = dayActs[j];
-      var cls = a.carrera==="Medicina" ? "ev-med" : "ev-obs";
+      var cls = calEventClass(a.tipo);
       html += "<div class='cal-event " + cls + "'>" + a.nombre + "</div>";
     }
     if (dayActs.length > 3) html += "<div style='font-size:10px;color:var(--gray3)'>+" + (dayActs.length-3) + " mas</div>";
@@ -757,3 +814,16 @@ function showToast(msg) {
 // ARRANCAR
 // =============================================================
 init();
+
+// =============================================================
+// CALENDARIO — clase por tipo
+// =============================================================
+
+function calEventClass(tipo) {
+  if (tipo === "Seminario")   return "ev-sem";
+  if (tipo === "Taller")      return "ev-tal";
+  if (tipo === "Optativo I")  return "ev-opt1";
+  if (tipo === "Optativo II") return "ev-opt2";
+  if (tipo === "Final")       return "ev-fin";
+  return "ev-sem";
+}
